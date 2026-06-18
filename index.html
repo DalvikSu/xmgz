@@ -49,20 +49,7 @@
             font-size: 0.8em;
             margin: 3px 0 0 0;
         }
-        .sidebar-collapse-btn {
-            background: rgba(0,0,0,0.2);
-            border: none;
-            color: #1a1a2e;
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
-        }
+
         .sidebar-collapse-btn:hover {
             background: rgba(0,0,0,0.3);
         }
@@ -218,18 +205,22 @@
             text-overflow: ellipsis;
         }
         .content-header h2 {
-            color: #ffd700;
             font-size: 1.1em;
             display: inline;
         }
-        .content-header .subtitle {
-            color: #888;
-            font-size: 1em;
-            margin-left: 15px;
-            display: inline;
+        .content-header .section-name {
+            color: #fff;
+            font-weight: normal;
+            margin-right: 10px;
         }
-        .content-header .subtitle::before {
+        .content-header .collection-name {
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 1em;
+        }
+        .content-header .collection-name::before {
             content: "/ ";
+            color: #888;
         }
         
         .content-body {
@@ -698,7 +689,6 @@
                     <h1>📖 性命圭旨</h1>
                     <p>性命双修 · 万神圭旨</p>
                 </div>
-                <button class="sidebar-collapse-btn" onclick="toggleSidebar()">◀</button>
             </div>
             
             <div class="collection open" data-collection="yuan">
@@ -1436,8 +1426,14 @@
         // 切换收藏夹展开/收起
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('collapsed');
-            document.body.classList.toggle('sidebar-collapsed');
+            const isCollapsed = sidebar.classList.toggle('collapsed');
+            document.body.classList.toggle('sidebar-collapsed', isCollapsed);
+
+            // 切换按钮图标
+            const collapseBtns = document.querySelectorAll('.collapse-btn');
+            collapseBtns.forEach(btn => {
+                btn.textContent = isCollapsed ? '▶' : '◀';
+            });
         }
 
         function toggleCollection(el) {
@@ -1469,8 +1465,8 @@
                 <div class="content-header">
                     <button class="collapse-btn" onclick="toggleSidebar()">◀</button>
                     <div class="header-titles">
-                        <span class="subtitle">${data.collection}</span>
-                        <h2>${data.title}</h2>
+                        <h2 class="section-name">${data.title}</h2>
+                        <span class="collection-name">${data.collection}</span>
                     </div>
                 </div>
                 <div class="content-body">
