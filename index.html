@@ -54,9 +54,7 @@
             background: rgba(0,0,0,0.3);
         }
         .sidebar.collapsed {
-            width: 0 !important;
-            overflow: hidden;
-            border-right: none;
+            display: none;
         }
         .sidebar.collapsed .sidebar-header {
             padding: 15px 10px;
@@ -97,8 +95,11 @@
         .expand-btn:hover {
             transform: translateY(-50%) scale(1.1);
         }
-        body.sidebar-collapsed .expand-btn {
+        body:not(.sidebar-collapsed) .expand-btn {
             display: none;
+        }
+        body.sidebar-collapsed .expand-btn {
+            display: flex;
         }
         
         /* 章节分类 */
