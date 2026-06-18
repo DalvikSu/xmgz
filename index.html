@@ -204,23 +204,25 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .content-header h2 {
-            font-size: 1.1em;
-            display: inline;
-        }
-        .content-header .section-name {
-            color: #fff;
-            font-weight: normal;
-            margin-right: 10px;
+        .content-header .header-titles {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
         }
         .content-header .collection-name {
             color: #ffd700;
             font-weight: bold;
-            font-size: 1em;
+            font-size: 1.1em;
         }
-        .content-header .collection-name::before {
-            content: "/ ";
+        .content-header .divider {
             color: #888;
+            font-size: 1.1em;
+        }
+        .content-header .section-name {
+            color: #fff;
+            font-weight: normal;
+            font-size: 1.1em;
         }
         
         .content-body {
@@ -1465,8 +1467,9 @@
                 <div class="content-header">
                     <button class="collapse-btn" onclick="toggleSidebar()">◀</button>
                     <div class="header-titles">
-                        <h2 class="section-name">${data.title}</h2>
                         <span class="collection-name">${data.collection}</span>
+                        <span class="divider">|</span>
+                        <span class="section-name">${data.title}</span>
                     </div>
                 </div>
                 <div class="content-body">
