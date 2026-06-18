@@ -119,20 +119,28 @@
         }
         .content-header {
             background: linear-gradient(135deg, #0f3460, #16213e);
-            padding: 20px 30px;
+            padding: 10px 20px;
             border-bottom: 2px solid rgba(255,215,0,0.3);
             position: sticky;
             top: 0;
             z-index: 10;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .content-header h2 {
             color: #ffd700;
-            font-size: 1.5em;
+            font-size: 1.1em;
+            display: inline;
         }
         .content-header .subtitle {
             color: #888;
-            font-size: 0.9em;
-            margin-top: 5px;
+            font-size: 1em;
+            margin-left: 15px;
+            display: inline;
+        }
+        .content-header .subtitle::before {
+            content: "/ ";
         }
         
         .content-body {
@@ -1358,8 +1366,8 @@
 
             const html = `
                 <div class="content-header">
+                    <span class="subtitle">${data.collection}</span>
                     <h2>${data.title}</h2>
-                    <div class="subtitle">${data.collection}</div>
                 </div>
                 <div class="content-body">
                     <div class="content-node">
