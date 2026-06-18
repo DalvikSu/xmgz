@@ -1,0 +1,1750 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>性命圭旨 思维导图</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: #1a1a2e;
+            height: 100vh;
+            overflow: hidden;
+            color: #e8e8e8;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        /* 左侧目录 */
+        .sidebar {
+            width: 420px;
+            background: linear-gradient(180deg, #16213e 0%, #1a1a2e 100%);
+            border-right: 1px solid rgba(255,215,0,0.2);
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+        .sidebar-header {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            padding: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .sidebar-header h1 {
+            color: #1a1a2e;
+            font-size: 1.4em;
+            margin: 0;
+        }
+        .sidebar-header p {
+            color: #333;
+            font-size: 0.85em;
+            margin-top: 5px;
+        }
+        
+        /* 章节分类 */
+        .collection {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .collection-title {
+            color: #ffd700;
+            font-size: 1.1em;
+            font-weight: bold;
+            padding: 12px 15px;
+            background: rgba(255,215,0,0.1);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+        }
+        .collection-title:hover {
+            background: rgba(255,215,0,0.15);
+        }
+        .collection-title::before {
+            content: "◆";
+            margin-right: 8px;
+            font-size: 0.8em;
+        }
+        .arrow {
+            transition: transform 0.3s;
+            font-size: 0.8em;
+        }
+        .collection.open .arrow {
+            transform: rotate(90deg);
+        }
+        .collection-items {
+            display: none;
+        }
+        .collection.open .collection-items {
+            display: block;
+        }
+        
+        /* 章节项 */
+        .section-item {
+            padding: 10px 15px 10px 30px;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+            font-size: 0.95em;
+        }
+        .section-item:hover {
+            background: rgba(79,195,247,0.1);
+            border-left-color: #4fc3f7;
+        }
+        .section-item.active {
+            background: rgba(79,195,247,0.2);
+            border-left-color: #4fc3f7;
+            color: #4fc3f7;
+        }
+        .section-item .section-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-item .section-icon {
+            color: #888;
+            font-size: 0.7em;
+        }
+        
+        /* 右侧内容区 */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0;
+        }
+        .content-header {
+            background: linear-gradient(135deg, #0f3460, #16213e);
+            padding: 20px 30px;
+            border-bottom: 2px solid rgba(255,215,0,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .content-header h2 {
+            color: #ffd700;
+            font-size: 1.5em;
+        }
+        .content-header .subtitle {
+            color: #888;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        
+        .content-body {
+            padding: 25px 30px;
+        }
+        
+        /* 内容节点 */
+        .content-node {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .node-header {
+            background: linear-gradient(90deg, rgba(79,195,247,0.2), transparent);
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .node-title {
+            color: #4fc3f7;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        .node-body {
+            padding: 15px 20px;
+        }
+        .node-row {
+            margin: 12px 0;
+            line-height: 1.7;
+        }
+        .node-label {
+            color: #ffd54f;
+            font-weight: bold;
+            display: inline-block;
+            min-width: 70px;
+        }
+        .node-value {
+            color: #e0e0e0;
+        }
+        
+        /* 原文区域 */
+        .original-text {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid rgba(255,215,0,0.2);
+        }
+        .original-text h4 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            font-size: 1em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .original-text h4::before {
+            content: "📜";
+        }
+        .original-content {
+            color: #ccc;
+            line-height: 1.9;
+            font-size: 0.95em;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        .original-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        .original-content::-webkit-scrollbar-thumb {
+            background: rgba(255,215,0,0.3);
+            border-radius: 3px;
+        }
+        
+        /* 空状态 */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #666;
+            text-align: center;
+        }
+        .empty-state .icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        .empty-state p {
+            font-size: 1.1em;
+        }
+        
+        /* 高亮 */
+        .highlight {
+            color: #ff8a65;
+            font-weight: bold;
+        }
+        
+        /* 分割线 */
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,215,0,0.3), transparent);
+            margin: 20px 0;
+        }
+        
+        /* 滚动条 */
+        .sidebar::-webkit-scrollbar,
+        .main-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        .sidebar::-webkit-scrollbar-thumb,
+        .main-content::-webkit-scrollbar-thumb {
+            background: rgba(255,215,0,0.3);
+            border-radius: 4px;
+        }
+        .sidebar::-webkit-scrollbar-track,
+        .main-content::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.2);
+        }
+        
+        /* ==================== 手机适配 ==================== */
+        @media screen and (max-width: 768px) and (orientation: portrait) {
+            body {
+                overflow: hidden;
+            }
+            
+            .container {
+                flex-direction: column;
+                height: 100vh;
+            }
+            
+            /* 顶部导航区 - 占40%高度 */
+            .sidebar {
+                width: 100%;
+                height: 40vh;
+                border-right: none;
+                border-bottom: 2px solid rgba(255,215,0,0.3);
+                flex-shrink: 0;
+            }
+            
+            .sidebar-header {
+                padding: 12px 15px;
+            }
+            
+            .sidebar-header h1 {
+                font-size: 1.1em;
+            }
+            
+            .sidebar-header p {
+                font-size: 0.75em;
+                margin-top: 3px;
+            }
+            
+            /* 内容区 - 占60%高度 */
+            .main-content {
+                height: 60vh;
+                width: 100%;
+            }
+            
+            .content-header {
+                padding: 12px 15px;
+            }
+            
+            .content-header h2 {
+                font-size: 1.2em;
+            }
+            
+            .content-body {
+                padding: 15px;
+            }
+            
+            /* 手机切换按钮 */
+            .mobile-toggle {
+                display: flex;
+            }
+            
+            /* 章节项适配 */
+            .collection-title {
+                padding: 10px 12px;
+                font-size: 0.95em;
+            }
+            
+            .section-item {
+                padding: 8px 12px 8px 20px;
+                font-size: 0.85em;
+            }
+            
+            .collection-items {
+                max-height: calc(40vh - 50px);
+                overflow-y: auto;
+            }
+            
+            /* 内容区滚动条 */
+            .main-content {
+                overflow-y: auto;
+            }
+            
+            .content-node {
+                margin-bottom: 15px;
+            }
+            
+            .node-header {
+                padding: 12px 15px;
+            }
+            
+            .node-body {
+                padding: 12px 15px;
+            }
+            
+            .node-row {
+                margin: 10px 0;
+                font-size: 0.9em;
+            }
+            
+            .original-text {
+                margin-top: 15px;
+                padding: 15px;
+            }
+            
+            .original-content {
+                max-height: 30vh;
+                font-size: 0.9em;
+                line-height: 1.7;
+            }
+            
+            .empty-state {
+                padding: 20px;
+            }
+            
+            .empty-state .icon {
+                font-size: 2.5em;
+            }
+            
+            .empty-state p {
+                font-size: 0.95em;
+            }
+        }
+        
+        /* 手机横屏或平板 - 保持左右分屏 */
+        @media screen and (min-width: 769px), (orientation: landscape) {
+            .sidebar {
+                width: 420px;
+            }
+        }
+        
+        /* 手机横屏 */
+        @media screen and (max-width: 768px) and (orientation: landscape) {
+            .sidebar {
+                width: 300px;
+            }
+
+            .main-content {
+                width: calc(100% - 300px);
+            }
+        }
+
+        /* ==================== 高亮功能 ==================== */
+        .highlight-toolbar {
+            position: fixed;
+            display: none;
+            background: rgba(30, 40, 60, 0.95);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            padding: 6px 10px;
+            gap: 6px;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        .highlight-toolbar.show {
+            display: flex;
+        }
+        
+        .highlight-btn {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .highlight-btn:hover {
+            transform: scale(1.15);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        
+        .highlight-orange {
+            background: #ff9800;
+        }
+        
+        .highlight-green {
+            background: #4caf50;
+        }
+        
+        .highlight-pink {
+            background: #e91e63;
+        }
+        
+        .highlight-remove {
+            background: #666;
+            color: white;
+            font-size: 12px;
+            margin-left: 4px;
+        }
+        
+        /* 高亮样式 */
+        .highlight-orange {
+            background: rgba(255, 152, 0, 0.4);
+            border-bottom: 2px solid #ff9800;
+        }
+        
+        .highlight-green {
+            background: rgba(76, 175, 80, 0.4);
+            border-bottom: 2px solid #4caf50;
+        }
+        
+        .highlight-pink {
+            background: rgba(233, 30, 99, 0.4);
+            border-bottom: 2px solid #e91e63;
+        }
+        
+        /* 高亮悬浮卡片 */
+        .highlight-card {
+            position: absolute;
+            background: rgba(30, 40, 60, 0.98);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 12px 15px;
+            min-width: 200px;
+            max-width: 300px;
+            z-index: 2000;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+            cursor: default;
+        }
+        
+        .highlight-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .highlight-card-color {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .highlight-card-color-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .highlight-card-color-dot.orange { background: #ff9800; }
+        .highlight-card-color-dot.green { background: #4caf50; }
+        .highlight-card-color-dot.pink { background: #e91e63; }
+        
+        .highlight-card-color-text {
+            font-size: 0.85em;
+            color: #aaa;
+        }
+        
+        .highlight-card-actions {
+            display: flex;
+            gap: 6px;
+        }
+        
+        .highlight-card-btn {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: background 0.2s;
+        }
+        
+        .highlight-card-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .highlight-card-btn.delete {
+            background: rgba(244, 67, 54, 0.3);
+        }
+        
+        .highlight-card-btn.delete:hover {
+            background: rgba(244, 67, 54, 0.5);
+        }
+        
+        .highlight-card-note {
+            margin-top: 8px;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 6px;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+        
+        .highlight-card-note.orange { color: #ff9800; }
+        .highlight-card-note.green { color: #4caf50; }
+        .highlight-card-note.pink { color: #e91e63; }
+        
+        .highlight-card-note-input {
+            width: 100%;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 6px;
+            padding: 10px;
+            color: #fff;
+            font-size: 0.9em;
+            resize: vertical;
+            min-height: 60px;
+            font-family: inherit;
+        }
+        
+        .highlight-card-note-input.orange:focus { border-color: #ff9800; outline: none; }
+        .highlight-card-note-input.green:focus { border-color: #4caf50; outline: none; }
+        .highlight-card-note-input.pink:focus { border-color: #e91e63; outline: none; }
+        
+        .highlight-card-note-save {
+            margin-top: 8px;
+            background: #4fc3f7;
+            border: none;
+            color: #1a1a2e;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+        
+        .highlight-card-note-save:hover {
+            background: #81d4fa;
+        }
+        
+        /* 手机端高亮工具栏适配 */
+        @media screen and (max-width: 768px) and (orientation: portrait) {
+            .highlight-toolbar {
+                position: fixed;
+                bottom: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                top: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 左侧目录 -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1>📖 性命圭旨</h1>
+                <p>性命双修 · 万神圭旨</p>
+            </div>
+            
+            <div class="collection open" data-collection="yuan">
+                <div class="collection-title" onclick="toggleCollection(this)">
+                    <span>元集 — 经典理论基础</span>
+                    <span class="arrow">▶</span>
+                </div>
+                <div class="collection-items">
+                    <div class="section-item" data-section="大道说" onclick="showSection(this, '大道说')">
+                        <span class="section-name"><span class="section-icon">○</span> 大道说</span>
+                    </div>
+                    <div class="section-item" data-section="性命说" onclick="showSection(this, '性命说')">
+                        <span class="section-name"><span class="section-icon">○</span> 性命说</span>
+                    </div>
+                    <div class="section-item" data-section="太极了悟" onclick="showSection(this, '太极了悟')">
+                        <span class="section-name"><span class="section-icon">○</span> 太极了悟（太极发挥、中心图）</span>
+                    </div>
+                    <div class="section-item" data-section="水火龙虎" onclick="showSection(this, '水火龙虎')">
+                        <span class="section-name"><span class="section-icon">○</span> 水火龙虎（火龙水虎、日乌月兔）</span>
+                    </div>
+                    <div class="section-item" data-section="鼎炉药物" onclick="showSection(this, '鼎炉药物')">
+                        <span class="section-name"><span class="section-icon">○</span> 鼎炉药物（大小鼎炉、内外二药）</span>
+                    </div>
+                    <div class="section-item" data-section="三关返还" onclick="showSection(this, '三关返还')">
+                        <span class="section-name"><span class="section-icon">○</span> 三关返还（顺逆三关、取坎填离）</span>
+                    </div>
+                    <div class="section-item" data-section="降龙伏虎" onclick="showSection(this, '降龙伏虎')">
+                        <span class="section-name"><span class="section-icon">○</span> 降龙伏虎</span>
+                    </div>
+                    <div class="section-item" data-section="三家四象" onclick="showSection(this, '三家四象')">
+                        <span class="section-name"><span class="section-icon">○</span> 三家相见、和合四象</span>
+                    </div>
+                    <div class="section-item" data-section="五炁九鼎" onclick="showSection(this, '五炁九鼎')">
+                        <span class="section-name"><span class="section-icon">○</span> 五炁朝元、九鼎炼心</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="collection open" data-collection="heng">
+                <div class="collection-title" onclick="toggleCollection(this)">
+                    <span>亨集 — 筑基炼形功夫</span>
+                    <span class="arrow">▶</span>
+                </div>
+                <div class="collection-items">
+                    <div class="section-item" data-section="第一节口诀" onclick="showSection(this, '第一节口诀')">
+                        <span class="section-name"><span class="section-icon">①</span> 第一节：涵养本源 救护命宝</span>
+                    </div>
+                    <div class="section-item" data-section="退藏沐浴" onclick="showSection(this, '退藏沐浴')">
+                        <span class="section-name"><span class="section-icon">○</span> 退藏沐浴、玉液炼形</span>
+                    </div>
+                    <div class="section-item" data-section="第二节口诀" onclick="showSection(this, '第二节口诀')">
+                        <span class="section-name"><span class="section-icon">②</span> 第二节：安神祖窍 翕聚先天</span>
+                    </div>
+                    <div class="section-item" data-section="第三节口诀" onclick="showSection(this, '第三节口诀')">
+                        <span class="section-name"><span class="section-icon">③</span> 第三节：蛰藏气穴 众妙归根</span>
+                    </div>
+                    <div class="section-item" data-section="行立坐卧" onclick="showSection(this, '行立坐卧')">
+                        <span class="section-name"><span class="section-icon">○</span> 行禅、立禅、坐禅、卧禅</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="collection open" data-collection="li">
+                <div class="collection-title" onclick="toggleCollection(this)">
+                    <span>利集 — 采药火候功夫</span>
+                    <span class="arrow">▶</span>
+                </div>
+                <div class="collection-items">
+                    <div class="section-item" data-section="第四节口诀" onclick="showSection(this, '第四节口诀')">
+                        <span class="section-name"><span class="section-icon">④</span> 第四节：天人合发 采药归壶</span>
+                    </div>
+                    <div class="section-item" data-section="聚火载金" onclick="showSection(this, '聚火载金')">
+                        <span class="section-name"><span class="section-icon">○</span> 聚火载金、闭任开督</span>
+                    </div>
+                    <div class="section-item" data-section="第五节口诀" onclick="showSection(this, '第五节口诀')">
+                        <span class="section-name"><span class="section-icon">⑤</span> 第五节：乾坤交媾 去矿留金</span>
+                    </div>
+                    <div class="section-item" data-section="第六节口诀" onclick="showSection(this, '第六节口诀')">
+                        <span class="section-name"><span class="section-icon">⑥</span> 第六节：灵丹入鼎 长养圣胎</span>
+                    </div>
+                    <div class="section-item" data-section="周天火候" onclick="showSection(this, '周天火候')">
+                        <span class="section-name"><span class="section-icon">○</span> 周天火候、长养圣胎</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="collection open" data-collection="zhen">
+                <div class="collection-title" onclick="toggleCollection(this)">
+                    <span>贞集 — 温养出神境界</span>
+                    <span class="arrow">▶</span>
+                </div>
+                <div class="collection-items">
+                    <div class="section-item" data-section="第七节口诀" onclick="showSection(this, '第七节口诀')">
+                        <span class="section-name"><span class="section-icon">⑦</span> 第七节：婴儿现形 出离苦海</span>
+                    </div>
+                    <div class="section-item" data-section="真空炼形" onclick="showSection(this, '真空炼形')">
+                        <span class="section-name"><span class="section-icon">○</span> 真空炼形法则</span>
+                    </div>
+                    <div class="section-item" data-section="第八节口诀" onclick="showSection(this, '第八节口诀')">
+                        <span class="section-name"><span class="section-icon">⑧</span> 第八节：移神内院 端拱冥心</span>
+                    </div>
+                    <div class="section-item" data-section="六通验证" onclick="showSection(this, '六通验证')">
+                        <span class="section-name"><span class="section-icon">○</span> 六通验证</span>
+                    </div>
+                    <div class="section-item" data-section="第九节口诀" onclick="showSection(this, '第九节口诀')">
+                        <span class="section-name"><span class="section-icon">⑨</span> 第九节：本体虚空 超出三界</span>
+                    </div>
+                    <div class="section-item" data-section="三身成就" onclick="showSection(this, '三身成就')">
+                        <span class="section-name"><span class="section-icon">○</span> 三身成就（法报化）</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 右侧内容 -->
+        <div class="main-content" id="mainContent">
+            <div class="empty-state">
+                <div class="icon">☯</div>
+                <p>点击左侧章节查看详细内容</p>
+                <p style="font-size:0.9em;margin-top:10px;color:#555">Select a section from the left panel</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 高亮工具栏 -->
+    <div class="highlight-toolbar" id="highlightToolbar">
+        <button class="highlight-btn highlight-orange" onclick="applyHighlight('orange')" title="橙色高亮">🟠</button>
+        <button class="highlight-btn highlight-green" onclick="applyHighlight('green')" title="绿色高亮">🟢</button>
+        <button class="highlight-btn highlight-pink" onclick="applyHighlight('pink')" title="粉色高亮">🩷</button>
+        <button class="highlight-btn highlight-remove" onclick="removeHighlight()" title="取消高亮">✕</button>
+    </div>
+
+    <!-- 高亮悬浮卡片 -->
+    <div class="highlight-card" id="highlightCard" style="display:none;">
+        <div class="highlight-card-header">
+            <div class="highlight-card-color">
+                <span class="highlight-card-color-dot" id="cardColorDot"></span>
+                <span class="highlight-card-color-text" id="cardColorText"></span>
+            </div>
+            <div class="highlight-card-actions">
+                <button class="highlight-card-btn" id="btnAddNote" onclick="showNoteInput()">+ 备注</button>
+                <button class="highlight-card-btn delete" onclick="deleteHighlight()">删除</button>
+            </div>
+        </div>
+        <div id="noteDisplay"></div>
+        <div id="noteInputContainer" style="display:none;">
+            <textarea class="highlight-card-note-input" id="noteInput" placeholder="输入备注..."></textarea>
+            <button class="highlight-card-note-save" onclick="saveNote()">保存</button>
+        </div>
+    </div>
+
+    <script>
+        // 章节数据
+        const sectionData = {
+            "大道说": {
+                title: "大道说",
+                collection: "元集",
+                summary: {
+                    "概念": "道即「炁」——宇宙本源之气，无形无象，化生天地万物。",
+                    "主旨": "道为天地万物之本，性命双修可达天人合一，返本还源。",
+                    "方法": "识得此炁，修道养性，逆修返还，炼虚合道。"
+                },
+                original: `夫道也者，位天地，育万物曰道。揭日月，生五行曰道。多于恆河沙数曰道。孤则独无一侣曰道。植入鸿蒙，而还归溟涬曰道。善集造化，而頡超圣凡曰道。目下机境未兆，而突尔灵通曰道。眼前生杀分明，而无能逃避曰道。处卑汙，而大尊贵曰道。居幽暗，而极高明曰道。细入剎尘曰道。大包天地曰道。从无入有曰道。作佛成仙曰道。
+
+道也者，果何谓也？一言以定之曰：炁也。
+
+原夫一气蟠集，溟溟涬涬，窈窈莫测，氤氲活动，含灵至妙，是为太乙，是为未始之始。始也，是为道也，故曰无始。
+
+夫天地之有始也：一炁动荡，虚无开合，雌雄感召，黑白交凝，有无相射，混混沌沌，冲元至圣，包元含灵，神明变化，恍惚立极，是为太易，是为有始之始。始也，是为道生一也，是曰元始。
+
+夫天地之太极也：一气斯析，真宰自判，交映罗列，万灵肃护，阴阳判分，是为太极，是谓一生二也。是曰虚皇，阴样既判，天地位焉，人乃育焉，是为二生三也。是曰混元。
+
+人秉氤氲之气，而生而长。至于二八之年，则九三之阳乃纯，当是时也，岂非上德之大人乎？忽天一朝，谋报浑敦之德者至，乃日凿一窍，则九三之阳，蹄骤奔蹶，而去之六二之中矣。
+
+故紫阳真人曰："嗟夫！人生难得，光阴易迁，罔测修短，安逃业报？不自及早省悟，惟只甘分待终。若临期一念有差，立遂三涂恶趣，则动经尘劫，无有出期。当此之实，虽悔何及？"
+
+故三教圣人，以性命学，开方便门，教人熏修，以脱生死。儒家之教，教人顺性命以还造化，其道公；禅宗之教，教人幻性命以超大觉，其义高；老氏之教，教人修性命而得长生，其旨切。教虽分三，其道一也。`
+            },
+            
+            "性命说": {
+                title: "性命说",
+                collection: "元集",
+                summary: {
+                    "概念": "性者元神（心），命者元炁（身）；性为神、命为气。儒曰存心养性，道曰修心练性，释曰明心见性。",
+                    "主旨": "性命本一，性命双修，心息相依，神气交凝，归于本来真心。",
+                    "方法": "以神驭气，以气养神，神气合一，逆修返还。"
+                },
+                original: `儒之圣教曰："安汝止，钦厥止，艮其止，止其所，缉熙敬止，在止至善，黄中通理。正位居体，思不出位。立不易方，居天下之广居，立天下之正位，行天下之大道。浑然在中，粹然至善。诚静处，腔子里，乐处方寸，神明之舍，道义之门，活泼泼地，乐在其中。"
+
+要而言之，无非为此性命之道也。
+
+道之玄教曰："玄牝之门，天地之根，生身处，复命关，金丹之母，玄关之窍，凝结之所，呼吸之根。甲乙坛，戊己户，心源，性海、灵府，灵台、蓬莱岛，朱砂鼎，偃月炉，神室、气穴，土釜、谷神，灵根，把柄，坎离交媾之乡，千变万化之祖，生死不相干之地，神鬼觑不破之机，难以悉纪。"
+
+释之禅教曰：不二法门，甚深法界，虚空藏，寂灭海。真实地，总持门，彼岸净土，真境心地。极乐国，如来藏，舍利子，菩萨地，光明藏。圆觉海，般若岸，法王城，西方天堂。空中真际，这个三摩地，华藏海，陀罗尼门，不动道场。波罗密地，难以悉纪。
+
+余于于是而知不执中，不一贯，其能圣`
+            },
+            
+            "太极了悟": {
+                title: "太极了悟（太极发挥、中心图）",
+                collection: "元集",
+                summary: {
+                    "概念": "太极为混沌未分之炁，中心为灵关一窍——人之生死主宰，性命之根。",
+                    "主旨": "守中抱一，万化归心；此窍乃神仙长胎住息之乡，赤子安身立命之处。",
+                    "方法": "凝神静心，守住此窍，神气归根，常返照此处，行住坐卧心心不离。"
+                },
+                original: `天地以混混沌沌为太极，吾身以窈窈冥冥为太极。天地以此阴阳交媾而生万物，吾身以此阴阳交构而生大药。大药之生于身，与天地生物不异，总只是阴阳二气，二施一化，而玄黄相交，一稟一受，而上下相接。
+
+《南华经》云："至道之精，窈窈冥冥。"《道德经》云："窈兮冥兮，其中有精，其精甚真。"
+
+夫此一窍，原是神灵之台，秘密之府，真净明妙，虚彻灵通，卓然而独存者也。重生之本原。故曰心地；诸佛之所得，故曰菩提；交彻融摄，故曰法界；寂净常乐，故曰涅槃；不浊不漏，故曰清净；不妄不变，故曰真如；离过绝非，故曰佛性；护善遮恶，故曰总持；隐履含摄，故曰如来藏；超越玄祕，故曰密严国；统众德而大备，烁众昏而独照，故曰圆觉：其实皆一窍也。
+
+背之则凡，顺之则圣，迷之则生死始，悟之则轮回息。欲息轮回，莫若体乎至道；欲体至道，莫若观照本心；欲照本心，应须音眼虚鉴。`
+            },
+            
+            "水火龙虎": {
+                title: "水火龙虎（火龙水虎、日乌月兔）",
+                collection: "元集",
+                summary: {
+                    "概念": "火龙（心/神/离）、水虎（肾/气/坎）；日乌（阳精）、月兔（阴精）。水火既济方成金丹。",
+                    "主旨": "心火下降，肾水上升，水火相济，阴阳交媾。",
+                    "方法": "以神驭气，使心火下降，肾水上潮，自然既济。"
+                },
+                original: `火龙水虎说：火生于心，火雷为心。心不动，则火亦不动。火不动，则水不会潮，而生阴之祸。动于情则生阴。情阴一起，则火出于心，而赴于肾矣。于是阴火逆行，是为铅火。
+
+水虎说：水生于肾，水溺为精。精不动，则水亦不动。精不动，则火亦不降，而生阳之祸。动于欲则生阳。欲阳一起，则水溢于肾，而奔于心矣。于是阳水逆行，是为汞火。
+
+日乌月兔说：日乌者，离中阴精也。离中玄坤之象。阴精用事，火旺则能焚木。故心道甚远，而不可忘养其阴。月兔者，坎中阳气也。坎中玄乾之象。阳气用事，水旺则能漉金。故肾水愈浊，而不可不保其阳。`
+            },
+            
+            "鼎炉药物": {
+                title: "鼎炉药物（大小鼎炉、内外二药）",
+                collection: "元集",
+                summary: {
+                    "概念": "大鼎炉（乾首/上丹田）、小鼎炉（坤腹/下丹田）；外药（交感精）、内药（先天炁）。",
+                    "主旨": "以鼎炉烹炼药物，内外药相凝成丹。先修外药，后采内药。",
+                    "方法": "外药成就，内药生采，凝丹于鼎，温养火候。"
+                },
+                original: `大鼎炉论：夫大鼎炉者，乾之首也。上丹田也。顶门之所，乾阳之域也。诸阳之所会也。
+
+小鼎炉论：夫小鼎炉者，坤之腹也。下丹田也。海底之所，会阴之处也。百脉之所宗也。
+
+内外二药说：外药者，离中阴精也。交感之精也。降白虎，拘魄者也。内药者，坎中阳气也。先天之气也。运青龙，制魂者也。
+
+夫修炼内丹，必须洞晓阴阳，深明造化，方可与道合真。以外药言之，坎者，肾也。离者，心也。取坎中之阳，填离中之阴，则乾复成坤矣。`
+            },
+            
+            "三关返还": {
+                title: "三关返还（顺逆三关、取坎填离）",
+                collection: "元集",
+                summary: {
+                    "概念": "顺则生人（心肾分离），逆则成仙（坎离相交）；取坎中之阳填离中之阴，复归纯阳。",
+                    "主旨": "逆转造化，返本还源，炼就纯阳之体。",
+                    "方法": "以意引气，取坎填离，阴阳合一，归于乾元。"
+                },
+                original: `顺逆三关说：人自父母胞胎，一呼一吸，渐至长成。情欲之感，日益增益，于是九窍四肢皆不能动，而生死由是出矣。此顺之途也。
+
+若夫至人者，逆于阴阳，夺天地之造化，而归于虚无之境。此逆之途也。
+
+取坎填离说：取坎中之阳，填离中之阴。离阴既实，则复纯白为乾矣。斯时足补乾元，复全浑敦，以全亲之所生，以全天之所赋，是为囫囫圆圆，一个完人也。
+
+再加向上功夫精进不怠，则金丹成，而圣胎圆。圣胎圆而真人现。真人出现，变化无穷，隐显莫测，而与钟、吕、王、马并驾，亦又何难？`
+            },
+            
+            "降龙伏虎": {
+                title: "降龙伏虎",
+                collection: "元集",
+                summary: {
+                    "概念": "龙（妄念/心火）、虎（情欲/肾水）；降伏后天识神，驯服心猿意马。",
+                    "主旨": "降伏龙虎，使其不驰不纵，各安其位。",
+                    "方法": "定心止念，以神驭气，虎伏龙降，心息相依。"
+                },
+                original: `降龙说：龙者，妄想之火也。人心也。定心则火不炎上，而龙自降矣。
+
+伏虎说：虎者，情欲之水也。人身也。寡欲则水不泛滥，而虎自伏矣。
+
+古德云：心息相依，久成道矣。盖心定则神凝，神凝则气聚，气聚则精凝，三者浑而为一，则龙降虎伏，而金丹成矣。`
+            },
+            
+            "三家四象": {
+                title: "三家相见、和合四象",
+                collection: "元集",
+                summary: {
+                    "概念": "三家（神、气、精）、四象（木火金水/青龙白虎朱雀玄武），五行攒簇。",
+                    "主旨": "三家相见，四象和合，五行攒簇，归于混沌。",
+                    "方法": "身心合一，神气相依，精气神凝，阴阳和合。"
+                },
+                original: `三家相见说：三家者，神、气、精也。相聚于丹田，而成鼎器。然后精化气，气化神，神还虚，功至于此，则三家自然相见矣。
+
+和合四象说：四象者，青龙、白虎、朱雀、玄武也。在人为肝、肺、心、肾也。和合四象者，攒簇五行也。木上金下，火居水中，木旺于卯，火旺于午，金旺于酉，水旺于子。以神驭气，以息运精，自然四象和合，而归于土也。`
+            },
+            
+            "五炁九鼎": {
+                title: "五炁朝元、九鼎炼心",
+                collection: "元集",
+                summary: {
+                    "概念": "五炁（心肝脾肺肾）朝向上元（上丹田）；九鼎炼心，九次转换，炼尽阴魔。",
+                    "主旨": "五脏之气归根，与天地相通；心死神活，识死性现。",
+                    "方法": "凝神上田，五炁自然朝元；九次转换，炼心成神。"
+                },
+                original: `五炁朝元说：五炁者，心肝脾肺肾也。朝元者，朝于上元也。上元者，泥丸也。凝神上田，则五炁自然朝元矣。
+
+九鼎炼心说：炼心是炼尽九窍之阴魔也。九鼎者，九年也。九年则九转也。一转则一关也。一关则一炼也。炼心之名，因其有九转也。九转之功，其法简易，只在静定之中，念头不动，是为第一转。
+
+人从无始劫以来，迷却真心，不自觉知，故受轮转，枉入诸趣。今欲返本还源，当静心绝欲，不生杂念，是云炼心。炼心之法，无过于静坐。静坐久了，自然心开。心开则见性，见性则成佛矣。`
+            },
+            
+            "第一节口诀": {
+                title: "第一节口诀：涵养本源 救护命宝",
+                collection: "亨集",
+                summary: {
+                    "概念": "灵关一窍——人身生生主宰，性命之根。本来妙觉真心为'不死人'，即元神。",
+                    "主旨": "识得此窍则长生，迷失此窍则轮转。认得真心，不被识神所迷。",
+                    "方法": "内观此窍（凝神），常返照此处，行住坐卧心心不离。以神驭气，先断轮回根本。"
+                },
+                original: `第一节口诀 涵养本源救护命宝
+
+欲修长生，须识所生之本；欲求不死，当明不死之人。故曰："认得不死人，方才人不死。"那不死的人，到家呼无铁汉，释氏唤作金刚，即世人本来妙觉真心昰也。此心灵敏灵不昧，了了常知，其体不生不灭，其相无去无来。
+
+究之于先，天地之先莫知其始，穷之于后，天地之后莫知其终，高而无上，广不可极，渊而无下，深不可测。乾坤依此而覆载，日月依此而照临，虚空依此而宽广，万灵依此而变通。
+
+三教大圣，教人修道，是修这个成仙作佛也，是这个戴角披毛也，市这个圣凡二路，由此而分出生死，再无其他，登涅槃唯此一法。
+
+然世间万汇，未有一物不被无常所吞，独有这个无生灭可缚，无色相可窥，端端正正，停停当当，分分晓晓的，而人自不悟其所本來也。不悟者何？为有妄心。何谓妄心？盖为一切众生，从无始已来，迷却真心，不自觉知，故受轮转，枉人诸趣。
+
+原夫真心无妄，性智本明，妙湛元精，由妄瞥起，俄然晦昧，则失彼元精，粘湛发知，故转智为识，形中妄心，名之曰识。心本无知，由识故知；性本无生，由识故生。生身种子，萌蘖于兹，开有漏华，结生死果。
+
+今人妄认分寸中有个昭昭灵灵之物，浑然与物同体，便以为元神在昰，殊不知此即死死生生之识神，劫劫轮回之种子耳。故景岑云："学道之人不悟真，只为从前认识神。无量劫来生死本，痴人唤作本来人。"
+
+嗟夫！世人以奴为主而不知，认贼为子而不觉，是以外尊教人先断无始轮回根本者此也。此根既断，则诸识无依，复我元初常明本体。
+
+然而大道茫茫，当从何處下手，是以齐襟必举领，整纲要提纲。昔尹师指出："修行正路一条，教人打从源头 上做起。若源头洁净，天理时时现前，识念自然污染不得。"譬如杲日当空，魍魎灭迹。此一心地法门，是古今圣不易之道，故老子曰："若夫修道，先观其心。观心之法，妙在灵关一窍。"
+
+人自受生感气之初，禀天地一点元阳，化生此窍，以藏元神，其中空空洞洞，至虚至明，乃吾人生生主宰，真所谓有之则生，无之则死，生死盛衰，皆由这个。儒曰灵台，道曰灵关，释曰灵山，三教同一法门，总不外此灵明一窍。
+
+释教曰："佛在灵山莫远求，灵山只在汝心头，人人有 个灵山塔，好像灵山塔下修。"论其所也。
+
+玄教曰："大道根茎识者稀，常人日用孰谁知，为君指出神仙窟，一窍彎彎似月眉。"论其形也。
+
+盖此窍乃神灵之台，秘密之府，真净明妙，虚彻灵通，卓然而独存者也。重生之本原。故曰心地；诸佛之所得，故曰菩提；交彻融摄，故曰法界；寂净常乐，故曰涅槃；不浊不漏，故曰清净；不妄不变，故曰真如；离过绝非，故曰佛性；护善遮恶，故曰总持；隐履含摄，故曰如来藏；超越玄祕，故曰密严国；统众德而大备，烁众昏而独照，故曰圆觉：其实皆一窍也。背之则凡，顺之则圣，迷之则生死始，悟之则轮回息。欲息轮回，莫若体乎至道；欲体至道，莫若观照本心；欲照本心，应须音眼虚鉴。常教朗月辉明，每向定中慧照。时时保得此七情未发之中，时时全得此八识未染之体。外息诸缘，内绝诸妄，含眼光，凝耳韵，调鼻息，緄舌气，四肢不动，使眼、耳、鼻、舌、身之五识，各返其根，则精、神、魂、魄、意之五灵，各安其位。二六时中，眼常要内观此窍，耳常要逆听此窍，至于舌准，常要对着此窍。运用施为，念念不离此窍，行住坐卧，心心常在此窍，不可剎那忘照，率尔相违，神光一出便收来，造次弗离常在此。极子思所谓不可须臾离者昰也。"先存之，以虚其心，次忘之，以廓其量，随处随时，无碍自在"，正合《龙虎经》云："至妙之要，先存后忘。"此又口诀中之口诀也。`
+            },
+            
+            "退藏沐浴": {
+                title: "退藏沐浴、玉液炼形",
+                collection: "亨集",
+                summary: {
+                    "概念": "退藏于密，沐浴身心；玉液为津液，咽之可炼形化气。",
+                    "主旨": "沐浴身心，保养元炁；以玉液灌溉，渐次化精为气。",
+                    "方法": "含眼光、凝耳韵、调鼻息、缄舌气，咽下玉液，灌溉丹田。"
+                },
+                original: `退脏沐浴功夫：
+
+夫沐浴者，所以洗心涤虑，浣冒诸阳，洗涤五内也。在炼则有时，在养则有法。沐浴之功，不在进火退符之后，而在进火退符之中。
+
+每于阳气上升之时，真精发现之际，而即加以沐浴，则可洗心涤虑，而于以保持之。
+
+沐浴之候，与天时同其喜怒，夺天地之造化，非可以岁月计也。在乎心 之无为。譬如虚室生白，阴阳交媾，倏然而合，倏然而离，亦在乎心之有觉焉。
+
+玉液炼形法则：
+
+玉液者，津液也。乃精之所化。咽而下之，可以灌溉丹田，炼形化气。
+
+《太上宝梨》曰："玉液琼浆，比喻津液尔。行人咽之，若咽自家之物，无别滋味，流入丹田，以养圣胎。"`
+            },
+            
+            "第二节口诀": {
+                title: "第二节口诀：安神祖窍 翕聚先天",
+                collection: "亨集",
+                summary: {
+                    "概念": "祖窍（玄关）——神气归根之所；翕聚即聚集先天一气。",
+                    "主旨": "神住此窍则气住，气住此窍则精凝。",
+                    "方法": "将元神安于祖窍，念头不起，一心不乱，以意翕聚，绵绵若存。"
+                },
+                original: `第二节口诀 安神祖窍翕聚先天
+
+尹师曰："空洞无涯是玄窍，知而不守是功夫。"
+
+夫人一身之间，眼耳鼻舌，心肝脾肺肾，层层相接，而悉归于一处者，何也？不过借此以為凝神之地而已。抑非徒欲凝神已也。欲其聚而成块也。块者何？块乃一团也。一团者，一团和气也。
+
+盖此窍原是神仙长胎住息之乡，赤子安身立命之处。修丹者，欲于此窍而种根也。
+
+然行住坐卧，念不可离。念不离则神不散，神不散则气自凝，气自凝则丹自结矣。功夫全在调息二字。调息者，调度阴跷之息，与吾心中之气，相会于丹田之中者也。
+
+昔师曰："大道简易，只是一神。北方之水，水生于一。一者，常惺然也。南方之火，火生于二。二者，偶徒然也。"
+
+夫神气之交，乃人身中之阴阳。阴阳交而性命立，性命立而神气存。存者，存其神之谓也。存者，养也。养之则日盛，日盛则日灵。`
+            },
+            
+            "第三节口诀": {
+                title: "第三节口诀：蛰藏气穴 众妙归根",
+                collection: "亨集",
+                summary: {
+                    "概念": "气穴（下丹田）——元气归藏之地；蛰藏如虫伏，深藏不出。",
+                    "主旨": "将气收入气穴，如虫蛰伏，神气归根，命蒂归根。",
+                    "方法": "默守下田，绵绵若存，神气归根，归于混沌。"
+                },
+                original: `第三节口诀 蛰藏气穴众妙归根
+
+蛰藏气穴者，将吾所得之气，蛰藏于气穴之中。气穴者，下丹田也。在脐下一寸三分之处。乃人身中极重要的关头也。
+
+夫人各有根本，贼者自贼，求者自求，在圣不增，在凡不减。修行人只以调息为事，息之出入，皆由丹田。微微观之，若有若无，以意系之，而勿求他妙。
+
+如此则心息相依，阴阳相交，而太極之体立矣。
+
+太座之立，根于神气。神气之所以能交者，以其有主宰之者存也。主宰者谁？真意是也。意有多名：曰媒介，曰导引，曰符火，曰药头。要皆不过以真意之一字名之。
+
+真意实为炼药之枢要，炼丹之鼎，人能知此，则药物火候，悉在于此矣。`
+            },
+            
+            "行立坐卧": {
+                title: "行禅、立禅、坐禅、卧禅",
+                collection: "亨集",
+                summary: {
+                    "概念": "四禅法：行禅、立禅、坐禅、卧禅，动静结合，时时皆可炼功。",
+                    "主旨": "行住坐卧皆可炼功，心息相依为要。",
+                    "方法": "行时意在丹田，立时涵养本源，坐时收视返听，卧时右侧而卧。"
+                },
+                original: `行禅法：
+
+当平立时，凝神于气穴，绵绵若存，不可注也。行时亦然。步履须端，不可疾徐。自然若步深山，念虑若随流水。行到而神自清矣。
+
+立禅法：
+
+当平立时，涵养本源，凝神气穴，若静立时，不可将神发放，亦不可加意控制，但令微微照见而已。久则自然定静矣。
+
+坐禅法：
+
+当静坐时收视返听，返照于丹田气海之中，如猫之捕鼠，惺惺然若存若亡，绵绵之不绝，若有意，若无意，不可用心，需觅心，念起则放之，久久心自定矣。
+
+卧禅法：
+
+右侧而卧，名曰希夷睡。舒左手，绠右手，以左脉通于右窍。主安者，心安而神安也。默住鼻息，若存若亡，不可使有声，但令其在气穴中绵绵而过，若龙养珠然。`
+            },
+            
+            "第四节口诀": {
+                title: "第四节口诀：天人合发 采药归壶",
+                collection: "利集",
+                summary: {
+                    "概念": "人身一小天地，天人合发之时（活子时）；采先天一气（真铅）以归壶。",
+                    "主旨": "把握阴阳交替之机，采药以归壶，补已亏之元气。",
+                    "方法": "静定中机发时（活子时），以意微动，采药归壶。静定中捕捉先天一气。"
+                },
+                original: `第四节口诀 天人合发採药归壶
+
+闻之师曰：人受天地中气以生，原有真种，可以生生无穷，可以不生不灭。但人不能保守，日月消耗，卒至于亡。闻知保守，又不知锻炼火法，终不坚固，易为造化所夺。苟能保守无亏，又能以火锻炼，至于凝结成丹，如金如玉，可以长生，可以不化。
+
+盖欲炼此丹，须以药物为主，欲采药物，当在根本用功。何谓根本？吾身中太极是也。天地以混混沌沌为太极，吾身以窈窈冥冥为太极。天地以此阴阳交媾而生万物，吾身以此阴阳交构而生大药。大药之生于身，与天地生物不异，总只是阴阳二气。
+
+然此阳精不容易得。盖人之一身，彻上彻下，凡属有形者，无非阴邪滓浊之物。
+
+缘督子曰："一点阳精，祕在形山，不在心肾，而在乎玄关一窍。"
+
+赵中一曰："一身内外尽皆阴，莫把阳精里面寻。"
+
+邱长春曰："阳精虽是房中得之，而非御女之术，内非父母所生之躯，外非山林所产之宝，但着在形体上摸索，皆不是，亦不可离形体，而向外寻求。"
+
+若此等语，何异水中捞月、镜里攀花？
+
+一者何物也？就是那未发之中不二之一，即前所谓先天一气是也。
+
+《翠虚篇》云："大药虚凭神气精，采来一处结交成。丹头只是仙天气，炼作黄芽发玉英。"
+
+盖采者，以不采而采之；取者，以不取而取之。在于静定中，有非动作可为也。
+
+昔黄帝遣其玄珠，使知索，使离朱索，使吃诟索，索之皆不得，乃使罔象，罔象得之。罔象者，忘形之谓也。必忘形罔象，后先天一气可得。
+
+何谓先天？寂然不动，窈窈冥冥，太极未判之时是也。
+
+何谓后天？感而遂通，恍恍惚惚，太极以判之时是也。
+
+《混元宝章》云："寂然不动感而通，窥见阴阳造化功。"信乎寂然不动，则心与天通，而造化可夺也。
+
+当其喜怒示发之时，睹闻不及之地，河海静默，山岳藏烟，日月停景，璇玑不行，八脉归元，呼吸俱泯。既深入于窈冥之中，竟不知天之为盖，地之为舆，亦不知世之有人，己之有躯。少焉三宫气满，机动赖鸣，则一剑凿劳不在山，直须求道窈冥端。`
+            },
+            
+            "聚火载金": {
+                title: "聚火载金、闭任开督",
+                collection: "利集",
+                summary: {
+                    "概念": "以火（神）运金（气），载之而行；打通任督二脉，气行小周天。",
+                    "主旨": "以神驭气，循任督运行，聚火载金，周天循环。",
+                    "方法": "撮提谷道，气过尾闾，逆上督脉，经三关，过鹊桥，降任脉。"
+                },
+                original: `闭任开督：
+
+夫任脉者，乃身前之脉也。起于中极之下，循腹里，至咽喉。督脉者，身后之脉也。起于下极之俞，循脊里，上风府，入脑顶。二脉交通，气血流转，周而复始。
+
+闭任开督者，闭住气根，开通督脉之路也。撮提谷道，则气升尾闾，逆上督脉，过三关，而升于顶也。
+
+聚火载金诀法：
+
+聚火者，以神聚火也。载金者，以气载金也。火之上升，金之下降，相依而行，不相违也。
+
+盖火无形也，火之光，传之而不知其穷。金有象也，金之形，载之而见其迹。火载金以升天，金得火而变化。是故神之驭气，气之运神，其来有自来者焉。`
+            },
+            
+            "第五节口诀": {
+                title: "第五节口诀：乾坤交媾 去矿留金",
+                collection: "利集",
+                summary: {
+                    "概念": "心肾相交，坎离相合，如乾坤定位；除去阴渣杂质，留存纯阳金丹。",
+                    "主旨": "阴阳和合，产药结丹；炼尽阴滓，化为纯阳。",
+                    "方法": "心火下降，肾水上升，水火既济；以火候锻炼，去矿留金。"
+                },
+                original: `第五节口诀 乾坤交媾去矿留金
+
+乾坤交媾者，天地交媾也。在人则心肾相交也。乾为天，坤为地，乾之中爻入于坤，而成坎。坤之中爻入于乾，而成离。坎离者，阴阳也。阴阳者，水火也。水火者，心肾也。
+
+夫人心若动，则肾应之。肾一动，则心亦动。是故心肾相感，阴阳相交，而成乾坤交媾之象矣。
+
+去矿留金者，去阴滓而留阳精也。金者，阳精也。矿者，阴滓也。以火候锻炼之，则阴滓化而阳精成矣。
+
+夫炼丹者，不明火候，不可以成丹。不知消息，不可以长生。火候者，阴阳之消息也。消息者，一动一静之谓也。一动一静者，天地之道也。万物之纲纪，生杀之父母，变化之根蒂。`
+
+            },
+            
+            "第六节口诀": {
+                title: "第六节口诀：灵丹入鼎 长养圣胎",
+                collection: "利集",
+                summary: {
+                    "概念": "将灵丹（先天炁凝结）收入丹田鼎器；圣胎（阳神雏形）需长养温培。",
+                    "主旨": "丹入鼎而温养，胎成形而待出。",
+                    "方法": "以意引丹入鼎，文武火交替，沐浴温养，防危虑险。"
+                },
+                original: `第六节口诀 灵丹入鼎长养圣胎
+
+灵丹入鼎者，将采得之药，摄入丹田鼎中，以文火温养之也。
+
+夫鼎者，丹田也。药者，先天炁也。先天炁入丹田，与神相守，混而为一，则丹成矣。
+
+长养圣胎：
+
+长养圣胎者，圣人神化之功也。丹既入鼎，则当温养之。温养者，不可使火候有差，亦不可使神气有违。但令绵绵若存，如龙养珠，如母育子，不可顷刻暂忘，刹那失照。
+
+《参同契》曰："耳目口三宝，闭塞勿发通，真人潜深渊，浮游守规中。"
+
+又曰："校聂修之，常以身为国，以民为心，以神为主，以气为卫，神气相交，纽结不解，然后可以久视长生。"
+
+火候行持，最宜细密。子时阳生，午时阴生，阴阳变化之妙也。子进阳火，午退阴符，是云沐浴。卯酉二时，宜息不宜武，是云沐浴。
+
+防危虑险：
+
+火候之要，当于阴生之时，急以天然真火迎之。聚于脐下，存于丹田，不可怠也。若或总荒，则药物散失，丹基坏矣。`
+            },
+            
+            "周天火候": {
+                title: "周天火候、长养圣胎",
+                collection: "利集",
+                summary: {
+                    "概念": "子午周天（南北）、卯酉周天（东西）——火候运行之规。",
+                    "主旨": "依时行火，动静交替，卯酉沐浴，周天循环。",
+                    "方法": "子时进阳火，午时退阴符，卯酉二时沐浴，温养圣胎。"
+                },
+                original: `周天璇玑图 卯酉周天口诀：
+
+周天者，阴阳升降之度也。一日一夜，阴阳升降，各有一周天。一年一年，阴阳升降，亦有一周天。修炼之人，与天合发，是云周天。
+
+子午周天者，子进阳火，午退阴符，一升一降，阴阳相交也。
+
+卯酉周天者，卯沐浴，酉沐浴，不进火，不退符，但守其定也。
+
+火候崇正图 行火候法：
+
+夫火候者，非有别火也，乃呼吸之息也。呼出则为降，吸入则为升。一出一入，而火候行矣。
+
+行火之时，当以意引气，从尾闾起，历三关，上泥丸，复下重楼，入丹田，是云一周天。
+
+其中有四正沐浴：子卯午酉也。沐浴者，不进火，不退符，但忘息以养之也。`
+            },
+            
+            "第七节口诀": {
+                title: "第七节口诀：婴儿现形 出离苦海",
+                collection: "贞集",
+                summary: {
+                    "概念": "阳神如婴儿成形（圣胎成熟），可出离下丹田；真空炼形，形神俱妙。",
+                    "主旨": "十月养胎，婴儿成形，可以移居天谷；出离生死苦海。",
+                    "方法": "温养守护，如龙养珠，如母育子，不可轻纵。真空炼形，外其身而虚空之。"
+                },
+                original: `第七节口诀 婴儿现形出离苦海
+
+前面火候已足，圣胎已圆，若果之未熟，儿之初生，弥历十月，脱出其胞。释氏以此谓之法身，又曰实相；玄门以此谓之赤子，又曰婴儿。
+
+婴儿当移胎换鼎之时，跃然而出，潜居气穴之间，又重开一混沌也。
+
+婴儿既宴坐静室，安处道场，须藏以玄玄，守以默默，始则藉坤母黄芽以育之，继则聚天地生意以哺之。此感彼应，发邇见远，其中自呼自吸，自阖自开，自开自静，自由自在，若神仙逍遥于无何乡，似如来禅定于寂灭海。
+
+既到此大安乐处，仍须密守关元，无令外缘六尘魔贼所侵。内结烦恼奸臣所乱。若坐若卧，常施莹净之功。时止时行，广运修持之力。遂得六们不漏，一道常通，真体如如，永固丹基者矣。
+
+日夕如此卫护，如此保顾，如龙养珠，如母育子，不可顷刻暂忘，刹那失照。
+
+虽然外固三要，尤要内遗三害。三害者："邪念、烦恼、嗔恚是也。"
+
+《参同契》曰："耳目口三宝，闭塞勿发通，真人潜深渊，浮游守规中。"其法只是以眼观眼，以耳听耳，以鼻调鼻，以口緄口，潜藏飞跃，在正一心，则外无声色臭味之牵，内无意念固我之累，自然方寸虚名，万缘澄寂，而我本来赤子，怡怡然安处其中矣。`
+            },
+            
+            "真空炼形": {
+                title: "真空炼形法则",
+                collection: "贞集",
+                summary: {
+                    "概念": "形神俱妙，与道合真；炼尽阴滓，变幻纯阳之体。",
+                    "主旨": "外其身而虚空之，形神俱炼，与太虚同体。",
+                    "方法": "百日炼形，三年温养，内外兼修，形神俱妙。"
+                },
+                original: `真空炼形法则：
+
+《清静经》曰："内观其心，心无其心，外视其形，形无其形。形无其形者，身空也；心无其心者，心空也。心空无碍，则神愈炼而愈灵；身空无碍，则形愈炼而愈清。直炼到形与神而相涵，身与心而为一方，才足形神俱妙，与道合真者也。"
+
+古仙曰："形似道全，命以术延。此术是窃无涯之元炁，续有限之形躯。"
+
+按孙陀罗尊者云："世尊教我观鼻端白，我初谛观，经三七日，见鼻中气出入如烟，身心内明，圆洞世界，遍成虚浮，犹如琉璃，烟相渐消，鼻息成白，心开漏尽，诸出入息，化为光明，照十方界，得阿罗汉。"
+
+夫人未生之先，一呼一吸，气通于母，人之既生之后，一呼一吸，气通于天，天人一气，联属流通，相吞相吐，如扯巨焉。
+
+陈翠虚曰："透体金光骨髓香，金筋玉骨尽纯阳。炼教赤血流为白，阴气销磨身自康。"
+
+真空炼形之法，譬如运瓮相似，若处瓮内，焉能运之？亦处于瓮外。身处瓮外者，即释氏所谓外其身而虚之是也。故老子曰："外其身而身修，忘其形而形存。"
+
+依法炼之百日，则七魄亡形，三尸绝迹，六贼潜藏，而十魔远遁矣；炼之千日，则四大一身，俨如水晶塔子，表里玲珑，内外洞彻，心华灿然，灵光显现。`
+            },
+            
+            "第八节口诀": {
+                title: "第八节口诀：移神内院 端拱冥心",
+                collection: "贞集",
+                summary: {
+                    "概念": "将阳神移至上丹田（泥丸/天谷）；端坐拱手，冥心入定，合乎自然。",
+                    "主旨": "由下田迁至上田，印证本来；万缘放下，无思无为。",
+                    "方法": "冥心合道，端拱不动，神居上田，常觉常明。"
+                },
+                original: `第八节口诀 移神内院端拱冥心
+
+始则则有作有为之者，采药结丹已了命也。终则无作无为之者，抱一冥心以了性也。
+
+《悟真篇》云："始于有作人争觉，及至无为众始知。但见无为为道妙，不祗有作是根基。"
+
+夫冥心者，深居静室，端拱默然、一尘不染、万虑俱忘、无思无为、任运自如、无视无听，抱神以静，无内无外，无将无迎，离相离空，离迷离妄，体含虚寂，常觉常明，但冥此心，万法归一。
+
+达观禅师云："色不缚兮空不碍，冥息冥心观自在。大千世界总归无，世界坏时渠不坏"。
+
+高峰禅师云："慈母受一生成佛之功，不出一念无生性海。"
+
+施肩吾曰："达摩面壁九年，方超内院。世尊冥心六载，始脱樊笼。"
+
+此时只言到太虚之阶梯，未曾造到太虚之实际。谓之炼神则可，谓之出神则未也。
+
+夫真空云者，不过返我于虚，复我于无而已。反覆者，回机也。故曰：一念回机，便同本得。`
+            },
+            
+            "六通验证": {
+                title: "六通验证",
+                collection: "贞集",
+                summary: {
+                    "概念": "六通：天眼、天耳、宿命、他心、神足、漏尽。修炼到一定程度自然显现。",
+                    "主旨": "神通是修炼的副产品，不可追求，智慧照破为要。",
+                    "方法": "静中显现，不可执著，恐堕魔境，韬光慧而不用。"
+                },
+                original: `何谓六通？按玉阳大师曰：
+
+一、天眼通：坐到静时，陡然心光发现，内则洞见肺腑，外则自见须眉。神智踊跃，此是心境通也。
+
+二、天耳通：不出卢舍，预知未来事情，身居空中，又能隔墙见物，此是神境通也。
+
+三、他心通：正坐之间，霎时迷闷，混沌不分，少顷心窍豁然大开，地理山河，如同掌上观纹，此是天眼通也。
+
+四、天耳通：能闻十方之音，如耳边音，能忆生前之事，如眼前事，此乃是天耳通也。
+
+五、宿命通：或昼或夜，入于大定，上见天堂，下见地狱，观透无数劫来，宿命所更，此乃是宿信通也。
+
+六、他心通：神通变化，出入自如，洞鉴十方众生，知他心内隐微之事，他虽意念未萌，了了先知；他虽意念未萌，了了先觉，此是他心通也。
+
+古云："道高一尺，魔高一丈，正定之定，或开种种善恶之声，或现种种违顺之境，总是魔障，不可著地。又须反现一身四大，俱是假合，如梦如幻，全员非真。但此心魔，自消自灭。"`
+            },
+            
+            "第九节口诀": {
+                title: "第九节口诀：本体虚空 超出三界",
+                collection: "贞集",
+                summary: {
+                    "概念": "本来面目，虚空本体，与太虚同体；跳出三界（欲界、色界、无色界）。",
+                    "主旨": "粉碎虚空，返于无极，证得无上正觉。",
+                    "方法": "炼虚合道，虚空粉碎，方露全真。九年温养，阳神出壳。"
+                },
+                original: `第九节口诀 本体虚空超出三界
+
+按《梓潼化书》云："余之在朝也，以闻方外之言，辞荣而归，道逢隐者，指余以心印，授余以《正诀》曰：'此西方大圣人归寂法也，子能念而习之，可度生死。死而不亡，终生正觉。'"
+
+上阳子云："养得金丹圆似月，未勉有圆还有缺。何如炼个太阳红，三界十方俱洞彻。"
+
+盖圣修诣极，自是少一段不得。缘丹经子书，皆不曾言及此末后一节。
+
+李清庵曾说到这里。如门人问脱胎后，还有造化么？清庵曰："有造化在。"
+
+圣人云："身外有身，未为奇特，虚空粉碎，方露全真。所以脱胎之后，正要脚踏实实地，直待与虚空同体方为了当。"
+
+又云："更有炼虚一著，当于言外求之。"
+
+究竟到此，已曾窥破虚空之本体，但未得安本体于虚空中。
+
+即《华严经》云："法性如虚空，诸佛于中住。"
+
+到这里自知道，虚空是本体，本体是虚空，必须再加功于上上胜进，进进不已，直到水穷山尽，转身百尽竿头，至必至于不生不灭之根源，终终于步生不灭之觉岸。
+
+夫空中不空者，真空也。真空者，大道也。今之炼神还虚者，尤落在第二义。未到老氏无上至真之道也。炼虚合道者，此圣帝第一义。即是释氏最上一乘之法也。`
+            },
+            
+            "三身成就": {
+                title: "三身成就（法报化）",
+                collection: "贞集",
+                summary: {
+                    "概念": "法身（清净）、报身（圆满）、化身（千百亿）；金丹成就后，分形散影。",
+                    "主旨": "三身成就，与佛无二，与道合真。",
+                    "方法": "金丹成就后，阳神出壳，化身万千，广渡众生。"
+                },
+                original: `此法只是复炼阳神，以还归我毗卢性海耳。所以将前面分影散行之神，摄归本体。又将本体之神，销归天谷。又将天谷之神，退藏于祖窍之中，如龙养頦下之珠，若鹤抱巢中之卵，谨谨护持，毋容再出。
+
+寂灭旣久，则神光如云发电，从窍中而贯于上窍，大窍小窍，窍窍皆有神光也。光明洞靡，照彻十方。上彻天界，下彻地界，中彻人界。三界之内，处处神光。
+
+故大觉禅师云："一个舍利光熠熠，照尽亿万万无穷劫。大千世界总皈依，三十三天咸统摄。"
+
+而舍利光晓满于三千大千界内，尤未尽其分量，又自三千大千界中，复放无量毫光，直充塞于极乐世界。
+
+《华严经》偈曰："诸佛似一大贺镜，我身犹著摩尼珠，诸佛法身入我体，我身常入诸佛躯。"
+
+五祖弘忍云："一佛二佛千万佛，总是自心无别物。昔年亲种善根基，今日依然得渠力。"
+
+荷泽禅师云："本来面目是真如，舍利光中认得渠。万劫迷头今始悟，方知自性自文殊。"
+
+自性清净，便是清净佛；自性如如，便是自在佛；自性不昧，便是光明佛。自性坚固，便是不坏佛。各各诸佛，自身俱有，说亦不尽，惟一性耳。性即是心，心即是佛。
+
+到此地位，方知天地与我同根，万物与我一体。遍法界是个如来藏，尽大地是个法王身。实际无差，与三世佛而一时成道，真空平等，共十类生。而同日涅槃。
+
+太上所以云天地有坏，这个不坏。这个才是真我，这个才是真如，这个才是真性命，这个才是真本体。`
+            }
+        };
+
+        // 切换收藏夹展开/收起
+        function toggleCollection(el) {
+            el.parentElement.classList.toggle('open');
+        }
+
+        // 显示章节内容
+        function showSection(el, sectionName) {
+            // 更新激活状态
+            document.querySelectorAll('.section-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            el.classList.add('active');
+
+            const data = sectionData[sectionName];
+            if (!data) {
+                document.getElementById('mainContent').innerHTML = `
+                    <div class="content-header">
+                        <h2>${sectionName}</h2>
+                        <div class="subtitle">内容整理中...</div>
+                    </div>
+                `;
+                return;
+            }
+
+            const html = `
+                <div class="content-header">
+                    <h2>${data.title}</h2>
+                    <div class="subtitle">${data.collection}</div>
+                </div>
+                <div class="content-body">
+                    <div class="content-node">
+                        <div class="node-header">
+                            <div class="node-title">📚 章节概要</div>
+                        </div>
+                        <div class="node-body">
+                            <div class="node-row">
+                                <span class="node-label">概念：</span>
+                                <span class="node-value">${data.summary['概念']}</span>
+                            </div>
+                            <div class="node-row">
+                                <span class="node-label">主旨：</span>
+                                <span class="node-value">${data.summary['主旨']}</span>
+                            </div>
+                            <div class="node-row">
+                                <span class="node-label">方法：</span>
+                                <span class="node-value">${data.summary['方法']}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="divider"></div>
+                    
+                    <div class="original-text">
+                        <h4>古籍原文</h4>
+                        <div class="original-content">${data.original.replace(/\n\n/g, '<br><br>')}</div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('mainContent').innerHTML = html;
+
+            // 更新当前章节并加载保存的高亮
+            currentSection = sectionName;
+            setTimeout(() => {
+                applyHighlightsForSection(sectionName);
+            }, 100);
+        }
+
+        // 为当前章节应用保存的高亮
+        function applyHighlightsForSection(sectionName) {
+            const savedHighlights = getHighlightsForSection(sectionName);
+            const contentEl = document.querySelector('.original-content');
+            if (!contentEl || savedHighlights.length === 0) return;
+
+            savedHighlights.forEach(h => {
+                // 在原文中查找匹配的文本并高亮
+                const walker = document.createTreeWalker(
+                    contentEl,
+                    NodeFilter.SHOW_TEXT,
+                    null,
+                    false
+                );
+
+                let found = false;
+                while (walker.nextNode() && !found) {
+                    const text = walker.currentNode.textContent;
+                    const index = text.indexOf(h.text);
+                    if (index !== -1) {
+                        const range = document.createRange();
+                        range.setStart(walker.currentNode, index);
+                        range.setEnd(walker.currentNode, index + h.text.length);
+
+                        const selection = window.getSelection();
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+
+                        // 应用高亮
+                        const selection_1 = window.getSelection();
+                        if (selection_1.rangeCount > 0) {
+                            const range_1 = selection_1.getRangeAt(0);
+                            const span = document.createElement('span');
+                            span.className = `highlight-${h.color}`;
+                            if (h.note) {
+                                span.dataset.note = h.note;
+                            }
+                            span.appendChild(range_1.extractContents());
+                            range_1.insertNode(span);
+                        }
+
+                        found = true;
+                    }
+                }
+            });
+        }
+
+        // 默认选中第一个
+        document.querySelector('.section-item').click();
+
+        // ==================== 高亮功能 ====================
+        let selectedRange = null;
+        let currentHighlightSpan = null;
+        let hideCardTimer = null;
+        const toolbar = document.getElementById('highlightToolbar');
+        const highlightCard = document.getElementById('highlightCard');
+        let currentSection = '大道说'; // 当前章节
+
+        // ========== localStorage 保存/加载 ==========
+        const STORAGE_KEY = 'xingmingguizhi_highlights';
+
+        function loadHighlights() {
+            try {
+                const data = localStorage.getItem(STORAGE_KEY);
+                return data ? JSON.parse(data) : {};
+            } catch (e) {
+                return {};
+            }
+        }
+
+        function saveHighlights(highlights) {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(highlights));
+            } catch (e) {
+                console.warn('保存高亮失败:', e);
+            }
+        }
+
+        function getHighlightsForSection(section) {
+            const all = loadHighlights();
+            return all[section] || [];
+        }
+
+        function saveHighlightForSection(section, sectionHighlights) {
+            const all = loadHighlights();
+            if (sectionHighlights.length === 0) {
+                delete all[section];
+            } else {
+                all[section] = sectionHighlights;
+            }
+            saveHighlights(all);
+        }
+
+        // 显示/隐藏工具栏
+        document.addEventListener('mouseup', function(e) {
+            const mainContent = document.getElementById('mainContent');
+            if (!mainContent.contains(e.target)) return;
+
+            // 如果点击的是高亮卡片，不隐藏
+            if (highlightCard.contains(e.target)) return;
+
+            setTimeout(() => {
+                const selection = window.getSelection();
+                if (selection && selection.toString().length > 0) {
+                    selectedRange = selection.getRangeAt(0);
+
+                    // 检查选择是否在内容区域内
+                    if (mainContent.contains(selectedRange.startContainer)) {
+                        const rect = selectedRange.getBoundingClientRect();
+                        toolbar.style.left = (rect.left + rect.width / 2 - toolbar.offsetWidth / 2) + 'px';
+                        toolbar.style.top = (rect.top - toolbar.offsetHeight - 10 + window.scrollY) + 'px';
+                        toolbar.classList.add('show');
+                    }
+                } else {
+                    toolbar.classList.remove('show');
+                }
+            }, 10);
+        });
+
+        // 点击工具栏时不隐藏
+        toolbar.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+        });
+
+        // 点击其他地方隐藏工具栏和备注卡片
+        document.addEventListener('mousedown', function(e) {
+            const mainContent = document.getElementById('mainContent');
+            if (!toolbar.contains(e.target) && !highlightCard.contains(e.target)) {
+                toolbar.classList.remove('show');
+                highlightCard.style.display = 'none';
+            }
+        });
+
+        // 高亮悬浮事件
+        document.addEventListener('mouseover', function(e) {
+            const target = e.target;
+            if (target.classList.contains('highlight-orange') ||
+                target.classList.contains('highlight-green') ||
+                target.classList.contains('highlight-pink')) {
+                // 鼠标移到高亮上，始终显示悬浮卡片
+                currentHighlightSpan = target;
+
+                // 取消任何待执行的隐藏计时器
+                if (hideCardTimer) {
+                    clearTimeout(hideCardTimer);
+                    hideCardTimer = null;
+                }
+
+                showHighlightCard(target, e);
+            }
+        });
+
+        document.addEventListener('mouseout', function(e) {
+            const target = e.target;
+            // 检查是否离开了高亮区域（且不是进入卡片）
+            if ((target.classList.contains('highlight-orange') ||
+                target.classList.contains('highlight-green') ||
+                target.classList.contains('highlight-pink')) &&
+                !highlightCard.contains(e.relatedTarget)) {
+                // 延迟1秒后隐藏
+                hideCardTimer = setTimeout(() => {
+                    highlightCard.style.display = 'none';
+                    currentHighlightSpan = null;
+                }, 1000);
+            }
+        });
+
+        // 鼠标移到卡片上时，取消隐藏计时器
+        highlightCard.addEventListener('mouseover', function(e) {
+            if (hideCardTimer) {
+                clearTimeout(hideCardTimer);
+                hideCardTimer = null;
+            }
+        });
+
+        function showHighlightCard(span, e) {
+            // 获取颜色类型
+            let color = '';
+            if (span.classList.contains('highlight-orange')) color = 'orange';
+            else if (span.classList.contains('highlight-green')) color = 'green';
+            else if (span.classList.contains('highlight-pink')) color = 'pink';
+
+            const colorNames = { orange: '橙色', green: '绿色', pink: '粉色' };
+            const note = span.dataset.note || '';
+
+            // 更新卡片内容
+            document.getElementById('cardColorDot').className = `highlight-card-color-dot ${color}`;
+            document.getElementById('cardColorText').textContent = colorNames[color];
+
+            const noteDisplay = document.getElementById('noteDisplay');
+            const noteInputContainer = document.getElementById('noteInputContainer');
+            const noteInput = document.getElementById('noteInput');
+
+            if (note) {
+                noteDisplay.innerHTML = `<div class="highlight-card-note ${color}">${note}</div>`;
+                noteInputContainer.style.display = 'none';
+                noteDisplay.style.display = 'block';
+                document.getElementById('btnAddNote').textContent = '编辑备注';
+            } else {
+                noteDisplay.style.display = 'none';
+                noteInputContainer.style.display = 'none';
+                document.getElementById('btnAddNote').textContent = '+ 备注';
+            }
+
+            // 定位卡片
+            const rect = span.getBoundingClientRect();
+            const cardWidth = 280;
+            let left = rect.left;
+            let top = rect.bottom + 10 + window.scrollY;
+
+            // 超出右边界
+            if (left + cardWidth > window.innerWidth) {
+                left = window.innerWidth - cardWidth - 10;
+            }
+
+            highlightCard.style.left = left + 'px';
+            highlightCard.style.top = top + 'px';
+            highlightCard.style.display = 'block';
+        }
+
+        function showNoteInput() {
+            const noteInputContainer = document.getElementById('noteInputContainer');
+            const noteDisplay = document.getElementById('noteDisplay');
+            const noteInput = document.getElementById('noteInput');
+
+            // 获取当前颜色
+            let color = 'orange';
+            if (currentHighlightSpan.classList.contains('highlight-green')) color = 'green';
+            else if (currentHighlightSpan.classList.contains('highlight-pink')) color = 'pink';
+
+            noteInput.className = `highlight-card-note-input ${color}`;
+            noteInput.value = currentHighlightSpan.dataset.note || '';
+
+            noteDisplay.style.display = 'none';
+            noteInputContainer.style.display = 'block';
+            noteInput.focus();
+        }
+
+        function saveNote() {
+            if (!currentHighlightSpan) return;
+
+            const noteInput = document.getElementById('noteInput');
+            const note = noteInput.value.trim();
+            const noteText = currentHighlightSpan.textContent;
+
+            // 获取颜色
+            let color = 'orange';
+            if (currentHighlightSpan.classList.contains('highlight-green')) color = 'green';
+            else if (currentHighlightSpan.classList.contains('highlight-pink')) color = 'pink';
+
+            if (note) {
+                currentHighlightSpan.dataset.note = note;
+            } else {
+                delete currentHighlightSpan.dataset.note;
+            }
+
+            // 更新 localStorage 中的备注
+            const highlights = getHighlightsForSection(currentSection);
+            const idx = highlights.findIndex(h => h.text === noteText && h.color === color);
+            if (idx !== -1) {
+                highlights[idx].note = note;
+                saveHighlightForSection(currentSection, highlights);
+            }
+
+            showHighlightCard(currentHighlightSpan, null);
+        }
+
+        function deleteHighlight() {
+            if (!currentHighlightSpan) return;
+
+            const noteText = currentHighlightSpan.textContent;
+            let color = 'orange';
+            if (currentHighlightSpan.classList.contains('highlight-green')) color = 'green';
+            else if (currentHighlightSpan.classList.contains('highlight-pink')) color = 'pink';
+
+            // 从 localStorage 删除
+            let highlights = getHighlightsForSection(currentSection);
+            highlights = highlights.filter(h => !(h.text === noteText && h.color === color));
+            saveHighlightForSection(currentSection, highlights);
+
+            // 删除高亮
+            const textNode = document.createTextNode(currentHighlightSpan.textContent);
+            currentHighlightSpan.parentNode.replaceChild(textNode, currentHighlightSpan);
+            highlightCard.style.display = 'none';
+            currentHighlightSpan = null;
+        }
+
+        // 应用高亮
+        function applyHighlight(color) {
+            if (!selectedRange) return;
+
+            const selection = window.getSelection();
+            if (!selection.rangeCount) return;
+
+            const range = selection.getRangeAt(0);
+            const selectedText = range.extractContents();
+            const textContent = selectedText.textContent;
+
+            // 创建高亮 span
+            const span = document.createElement('span');
+            span.className = `highlight-${color}`;
+            span.appendChild(selectedText);
+            range.insertNode(span);
+
+            // 保存到 localStorage
+            const highlights = getHighlightsForSection(currentSection);
+            highlights.push({ text: textContent, color: color, note: '' });
+            saveHighlightForSection(currentSection, highlights);
+
+            // 清除选择
+            selection.removeAllRanges();
+            toolbar.classList.remove('show');
+        }
+
+        // 取消高亮
+        function removeHighlight() {
+            if (!selectedRange) return;
+
+            const selection = window.getSelection();
+            if (!selection.rangeCount) return;
+
+            const range = selection.getRangeAt(0);
+            const container = range.commonAncestorContainer;
+
+            // 找到高亮元素
+            let node = container;
+            if (node.nodeType === Node.TEXT_NODE) {
+                node = node.parentElement;
+            }
+
+            const highlightSpan = node.closest('.highlight-orange, .highlight-green, .highlight-pink');
+            if (highlightSpan) {
+                // 解包高亮，保留文本
+                const textNode = document.createTextNode(highlightSpan.textContent);
+                highlightSpan.parentNode.replaceChild(textNode, highlightSpan);
+
+                // 恢复选择
+                const newRange = document.createRange();
+                newRange.selectNodeContents(textNode);
+                selection.removeAllRanges();
+                selection.addRange(newRange);
+            }
+
+            toolbar.classList.remove('show');
+        }
+    </script>
+</body>
+</html>
