@@ -28,21 +28,57 @@
         }
         .sidebar-header {
             background: linear-gradient(135deg, #ffd700, #ff8c00);
-            padding: 20px;
-            text-align: center;
+            padding: 15px 20px;
             position: sticky;
             top: 0;
             z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .sidebar-header-content {
+            text-align: left;
         }
         .sidebar-header h1 {
             color: #1a1a2e;
-            font-size: 1.4em;
+            font-size: 1.2em;
             margin: 0;
         }
         .sidebar-header p {
             color: #333;
-            font-size: 0.85em;
-            margin-top: 5px;
+            font-size: 0.8em;
+            margin: 3px 0 0 0;
+        }
+        .sidebar-collapse-btn {
+            background: rgba(0,0,0,0.2);
+            border: none;
+            color: #1a1a2e;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        .sidebar-collapse-btn:hover {
+            background: rgba(0,0,0,0.3);
+        }
+        .sidebar.collapsed .sidebar-header {
+            padding: 15px;
+            justify-content: center;
+        }
+        .sidebar.collapsed .sidebar-header-content {
+            display: none;
+        }
+        .sidebar.collapsed .sidebar-collapse-btn {
+            transform: rotate(180deg);
+        }
+        .sidebar.collapsed .collection,
+        .sidebar.collapsed .section-item {
+            display: none;
         }
         
         /* 章节分类 */
@@ -603,10 +639,13 @@
 <body>
     <div class="container">
         <!-- 左侧目录 -->
-        <div class="sidebar">
+        <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <h1>📖 性命圭旨</h1>
-                <p>性命双修 · 万神圭旨</p>
+                <div class="sidebar-header-content">
+                    <h1>📖 性命圭旨</h1>
+                    <p>性命双修 · 万神圭旨</p>
+                </div>
+                <button class="sidebar-collapse-btn" onclick="toggleSidebar()">◀</button>
             </div>
             
             <div class="collection open" data-collection="yuan">
@@ -1341,6 +1380,11 @@
         };
 
         // 切换收藏夹展开/收起
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+        }
+
         function toggleCollection(el) {
             el.parentElement.classList.toggle('open');
         }
