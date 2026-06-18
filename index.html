@@ -86,6 +86,35 @@
             display: none;
         }
         
+        /* 展开按钮 */
+        .expand-btn {
+            position: fixed;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            border: none;
+            color: #1a1a2e;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 1001;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+        }
+        .expand-btn:hover {
+            transform: translateY(-50%) scale(1.1);
+        }
+        .sidebar.collapsed ~ .main-content .expand-btn,
+        body:has(.sidebar.collapsed) .expand-btn {
+            display: flex;
+        }
+        
         /* 章节分类 */
         .collection {
             padding: 10px 0;
@@ -767,6 +796,7 @@
         
         <!-- 右侧内容 -->
         <div class="main-content" id="mainContent">
+            <button class="expand-btn" onclick="toggleSidebar()">▶</button>
             <div class="empty-state">
                 <div class="icon">☯</div>
                 <p>点击左侧章节查看详细内容</p>
