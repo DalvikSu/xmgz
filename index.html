@@ -692,10 +692,10 @@
 
     <!-- 高亮工具栏 -->
     <div class="highlight-toolbar" id="highlightToolbar">
-        <button class="highlight-btn highlight-orange" onclick="applyHighlight('orange')" title="橙色高亮">🟠</button>
-        <button class="highlight-btn highlight-green" onclick="applyHighlight('green')" title="绿色高亮">🟢</button>
-        <button class="highlight-btn highlight-pink" onclick="applyHighlight('pink')" title="粉色高亮">🩷</button>
-        <button class="highlight-btn highlight-remove" onclick="removeHighlight()" title="取消高亮">✕</button>
+        <button class="highlight-btn highlight-orange" onclick="applyHighlight('orange')" ontouchend="event.preventDefault(); applyHighlight('orange')" title="橙色高亮">🟠</button>
+        <button class="highlight-btn highlight-green" onclick="applyHighlight('green')" ontouchend="event.preventDefault(); applyHighlight('green')" title="绿色高亮">🟢</button>
+        <button class="highlight-btn highlight-pink" onclick="applyHighlight('pink')" ontouchend="event.preventDefault(); applyHighlight('pink')" title="粉色高亮">🩷</button>
+        <button class="highlight-btn highlight-remove" onclick="removeHighlight()" ontouchend="event.preventDefault(); removeHighlight()" title="取消高亮">✕</button>
     </div>
 
     <!-- 高亮悬浮卡片 -->
@@ -1349,6 +1349,16 @@
             });
             el.classList.add('active');
 
+            // 手机端：点击章节时自动隐藏导航栏
+            if (window.innerWidth <= 768) {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.add('collapsed');
+                document.body.classList.add('sidebar-collapsed');
+                document.querySelectorAll('.collapse-btn').forEach(btn => {
+                    btn.textContent = '▶';
+                });
+            }
+
             const data = sectionData[sectionName];
             if (!data) {
                 document.getElementById('mainContent').innerHTML = `
@@ -1410,9 +1420,9 @@
             }, 100);
         }
 
-        // 为当前章节应用保存的高亮
-        function applyHighlightsForSection(sectionName) {
-            const savedHighlights = getHighlightsForSection(sectionName);
+        // 为当前章节应用保存的高亮（异步）
+        async function applyHighlightsForSection(sectionName) {
+            const savedHighlights = await getHighlightsForSection(sectionName);
             const contentEl = document.querySelector('.original-content');
             if (!contentEl || savedHighlights.length === 0) return;
 
@@ -1468,48 +1478,75 @@
         const highlightCard = document.getElementById('highlightCard');
         let currentSection = '大道说'; // 当前章节
 
-        // ========== localStorage 保存/加载 ==========
-        const STORAGE_KEY = 'xingmingguizhi_highlights';
+        // ========== 服务器端保存/加载 (Netlify Function) ==========
+        // 本地开发用 localhost:3000，生产环境用 /api (通过 netlify.toml 跳转)
+        const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3000/api'
+            : '/api';
 
-        function loadHighlights() {
+        // 加载所有高亮
+        async function loadHighlightsFromServer() {
             try {
-                const data = localStorage.getItem(STORAGE_KEY);
-                return data ? JSON.parse(data) : {};
+                const res = await fetch(`${API_BASE}/highlights`);
+                return await res.json();
             } catch (e) {
+                console.warn('从服务器加载高亮失败:', e);
                 return {};
             }
         }
 
-        function saveHighlights(highlights) {
+        // 保存所有高亮到服务器
+        async function saveHighlightsToServer(allHighlights) {
             try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(highlights));
+                const res = await fetch(`${API_BASE}/highlights`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(allHighlights)
+                });
+                return await res.json();
             } catch (e) {
-                console.warn('保存高亮失败:', e);
+                console.warn('保存高亮到服务器失败:', e);
+                return { success: false };
             }
         }
 
-        function getHighlightsForSection(section) {
-            const all = loadHighlights();
+        // 获取章节高亮（异步）
+        async function getHighlightsForSection(section) {
+            const all = await loadHighlightsFromServer();
             return all[section] || [];
         }
 
-        function saveHighlightForSection(section, sectionHighlights) {
-            const all = loadHighlights();
+        // 保存章节高亮
+        async function saveHighlightForSection(section, sectionHighlights) {
+            const all = await loadHighlightsFromServer();
             if (sectionHighlights.length === 0) {
                 delete all[section];
             } else {
                 all[section] = sectionHighlights;
             }
-            saveHighlights(all);
+            return await saveHighlightsToServer(all);
         }
 
-        // 显示/隐藏工具栏
+        // 显示/隐藏工具栏 - 电脑端
         document.addEventListener('mouseup', function(e) {
+            handleSelection(e);
+        });
+
+        // 显示/隐藏工具栏 - 手机端
+        document.addEventListener('touchend', function(e) {
+            handleSelection(e);
+        });
+
+        function handleSelection(e) {
+            if (!e) return;
+            const target = e.target || (e.changedTouches && e.changedTouches[0] && e.changedTouches[0].target);
+            if (!target) return;
+
             const mainContent = document.getElementById('mainContent');
-            if (!mainContent.contains(e.target)) return;
+            if (!mainContent.contains(target)) return;
 
             // 如果点击的是高亮卡片，不隐藏
-            if (highlightCard.contains(e.target)) return;
+            if (highlightCard.contains(target)) return;
 
             setTimeout(() => {
                 const selection = window.getSelection();
@@ -1527,15 +1564,25 @@
                     toolbar.classList.remove('show');
                 }
             }, 10);
-        });
+        }
 
         // 点击工具栏时不隐藏
         toolbar.addEventListener('mousedown', function(e) {
             e.preventDefault();
         });
+        toolbar.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+        });
 
         // 点击其他地方隐藏工具栏和备注卡片
         document.addEventListener('mousedown', function(e) {
+            const mainContent = document.getElementById('mainContent');
+            if (!toolbar.contains(e.target) && !highlightCard.contains(e.target)) {
+                toolbar.classList.remove('show');
+                highlightCard.style.display = 'none';
+            }
+        });
+        document.addEventListener('touchstart', function(e) {
             const mainContent = document.getElementById('mainContent');
             if (!toolbar.contains(e.target) && !highlightCard.contains(e.target)) {
                 toolbar.classList.remove('show');
@@ -1648,7 +1695,7 @@
             noteInput.focus();
         }
 
-        function saveNote() {
+        async function saveNote() {
             if (!currentHighlightSpan) return;
 
             const noteInput = document.getElementById('noteInput');
@@ -1666,18 +1713,18 @@
                 delete currentHighlightSpan.dataset.note;
             }
 
-            // 更新 localStorage 中的备注
-            const highlights = getHighlightsForSection(currentSection);
+            // 更新服务器中的备注
+            const highlights = await getHighlightsForSection(currentSection);
             const idx = highlights.findIndex(h => h.text === noteText && h.color === color);
             if (idx !== -1) {
                 highlights[idx].note = note;
-                saveHighlightForSection(currentSection, highlights);
+                await saveHighlightForSection(currentSection, highlights);
             }
 
             showHighlightCard(currentHighlightSpan, null);
         }
 
-        function deleteHighlight() {
+        async function deleteHighlight() {
             if (!currentHighlightSpan) return;
 
             const noteText = currentHighlightSpan.textContent;
@@ -1685,10 +1732,10 @@
             if (currentHighlightSpan.classList.contains('highlight-green')) color = 'green';
             else if (currentHighlightSpan.classList.contains('highlight-pink')) color = 'pink';
 
-            // 从 localStorage 删除
-            let highlights = getHighlightsForSection(currentSection);
+            // 从服务器删除
+            let highlights = await getHighlightsForSection(currentSection);
             highlights = highlights.filter(h => !(h.text === noteText && h.color === color));
-            saveHighlightForSection(currentSection, highlights);
+            await saveHighlightForSection(currentSection, highlights);
 
             // 删除高亮
             const textNode = document.createTextNode(currentHighlightSpan.textContent);
@@ -1698,7 +1745,7 @@
         }
 
         // 应用高亮
-        function applyHighlight(color) {
+        async function applyHighlight(color) {
             if (!selectedRange) return;
 
             const selection = window.getSelection();
@@ -1714,10 +1761,10 @@
             span.appendChild(selectedText);
             range.insertNode(span);
 
-            // 保存到 localStorage
-            const highlights = getHighlightsForSection(currentSection);
+            // 保存到服务器
+            const highlights = await getHighlightsForSection(currentSection);
             highlights.push({ text: textContent, color: color, note: '' });
-            saveHighlightForSection(currentSection, highlights);
+            await saveHighlightForSection(currentSection, highlights);
 
             // 清除选择
             selection.removeAllRanges();

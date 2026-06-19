@@ -1,0 +1,13 @@
+[build]
+  command = "echo 'No build command needed for static site'"
+  publish = "."
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# Redirect API calls to the function
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/highlights/:splat"
+  status = 200
