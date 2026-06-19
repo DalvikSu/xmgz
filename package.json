@@ -1,0 +1,12 @@
+{
+  "name": "xingmingguizhi",
+  "version": "1.0.0",
+  "description": "性命圭旨 mind map with highlights",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server . -p 8080"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  }
+}
